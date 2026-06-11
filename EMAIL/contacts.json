@@ -1,0 +1,14 @@
+[
+  {
+    "candidate_name": "Alice Example",
+    "candidate_background": "Software Engineer with 5 years experience in Python and ML.",
+    "portfolio_url": "https://example.com/alice",
+    "company": "TechCo",
+    "role": "Senior Engineer",
+    "recipient_name": "Bob Manager",
+    "recipient_email": "bob.manager@example.com",
+    "recipient_title": "Engineering Manager",
+    "personalization_note": "I saw your recent talk on scaling ML pipelines.",
+    "candidate_summary": "Full stack AI specialist"
+  }
+]

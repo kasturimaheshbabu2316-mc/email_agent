@@ -1,0 +1,6 @@
+python-dotenv
+rich
+jinja2
+pydantic
+groq
+streamlit
