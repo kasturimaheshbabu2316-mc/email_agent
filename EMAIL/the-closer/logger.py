@@ -1,86 +1,51 @@
-# logger.py
-"""Simple CSV logger for The Closer.
-
-Each call to :func:`log_entry` appends a row to ``outreach_log.csv`` located in the
-project root. The log contains a timestamp, contact information, the generated
-subject and body, the operation status (sent, draft_created, dry_run, skipped,
-error), and an optional error message.
-
-The implementation is deliberately lightweight and avoids external
-dependencies – only the Python standard library is used. It respects the
-environment variable ``LOG_FILE`` if set; otherwise it defaults to
-``outreach_log.csv`` in the current working directory.
-"""
-
-import csv
 import os
+import csv
 from datetime import datetime
-from typing import Any, Dict, Mapping, Optional
-
-DEFAULT_LOG_PATH = "outreach_log.csv"
-
-
-def _ensure_log_file(path: str) -> None:
-    """Create the CSV file with a header if it does not yet exist.
-
-    The header columns are:
-    ``timestamp,recipient_name,recipient_email,company,role,subject,body,status,error``
-    """
-    if not os.path.exists(path):
-        with open(path, mode="w", newline="", encoding="utf-8") as fp:
-            writer = csv.writer(fp)
-            writer.writerow([
-                "timestamp",
-                "recipient_name",
-                "recipient_email",
-                "company",
-                "role",
-                "subject",
-                "body",
-                "status",
-                "error",
-            ])
+from pathlib import Path
+from typing import Dict, Any
 
 
 def log_entry(
-    contact: Mapping[str, Any],
-    payload: Mapping[str, Any],
-    status: str,
-    error: Optional[str] = None,
-    log_path: Optional[str] = None,
+    contact: Dict[str, Any], payload: Dict[str, str], status: str, detail: str
 ) -> None:
-    """Append a single log entry.
+    """Append a single outreach event to a CSV log file.
 
     Parameters
     ----------
     contact: dict
-        The original contact record (usually returned by ``loader.load_contacts``).
+        The contact information (should contain at least ``recipient_email``).
     payload: dict
-        The email payload containing ``subject`` and ``body``.
+        Email payload with ``subject`` and ``body`` keys.
     status: str
-        One of ``sent``, ``draft_created``, ``dry_run``, ``skipped`` or ``error``.
-    error: str, optional
-        Human‑readable error message when ``status`` is ``error``.
-    log_path: str, optional
-        Override the destination CSV file. If omitted, the ``LOG_FILE`` env var is
-        consulted, falling back to ``outreach_log.csv``.
+        One of ``sent``, ``draft_created``, ``skipped`` or ``error``.
+    detail: str
+        Human‑readable detail or error message.
     """
-    path = log_path or os.getenv("LOG_FILE", DEFAULT_LOG_PATH)
-    _ensure_log_file(path)
-
-    timestamp = datetime.utcnow().isoformat() + "Z"
-    row = [
-        timestamp,
-        contact.get("recipient_name", ""),
-        contact.get("recipient_email", ""),
-        contact.get("company", ""),
-        contact.get("role", ""),
-        payload.get("subject", ""),
-        payload.get("body", "").replace("\n", " "),  # one‑line for CSV
-        status,
-        error or "",
-    ]
-
-    with open(path, mode="a", newline="", encoding="utf-8") as fp:
-        writer = csv.writer(fp)
-        writer.writerow(row)
+    log_path = os.getenv("LOG_FILE", "outreach_log.csv")
+    log_file = Path(log_path)
+    # Ensure parent directory exists
+    if log_file.parent and not log_file.parent.exists():
+        log_file.parent.mkdir(parents=True, exist_ok=True)
+    # Write header if file does not exist yet
+    write_header = not log_file.is_file()
+    with log_file.open("a", newline="", encoding="utf-8") as f:
+        writer = csv.writer(f)
+        if write_header:
+            writer.writerow(
+                [
+                    "timestamp",
+                    "recipient_email",
+                    "subject",
+                    "status",
+                    "detail",
+                ]
+            )
+        writer.writerow(
+            [
+                datetime.utcnow().isoformat(),
+                contact.get("recipient_email", ""),
+                payload.get("subject", ""),
+                status,
+                detail,
+            ]
+        )

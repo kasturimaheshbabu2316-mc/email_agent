@@ -16,4 +16,4 @@ COPY . .
 ENV PYTHONUNBUFFERED=1
 
 # Default command runs the CLI entry point
-CMD ["python", "main.py"]
+CMD ["python", "the-closer/main.py"]

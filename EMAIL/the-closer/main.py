@@ -20,8 +20,8 @@ def main():
         rprint("[red]No valid contacts found. Exiting.[/red]")
         return
 
-    dry_run = os.getenv('DRY_RUN', 'true').lower() == 'true'
-    use_llm = os.getenv('USE_LLM', 'false').lower() == 'true'
+    dry_run = os.getenv("DRY_RUN", "true").lower() == "true"
+    use_llm = os.getenv("USE_LLM", "false").lower() == "true"
 
     # ---------------------------------------------------
     # Opt‑out handling – skip contacts listed in opt_out.txt
@@ -35,8 +35,8 @@ def main():
     for contact in contacts:
         # Skip if email is on the opt‑out list
         if contact.get("recipient_email", "").lower() in opt_out_emails:
-            rprint(f"[yellow]Skipping {contact.get('recipient_email')} (opt‑out)" )
-            log_entry(contact, {}, "opt_out")
+            rprint(f"[yellow]Skipping {contact.get('recipient_email')} (opt‑out)")
+            log_entry(contact, {}, "opt_out", "Skipped due to opt-out list")
             continue
 
         payload = render_template(contact)
@@ -44,16 +44,17 @@ def main():
         if use_llm:
             payload = enhance_with_llm(payload)
 
-        preview_email(payload['subject'], payload['body'])
+        preview_email(payload["subject"], payload["body"])
         choice = prompt_confirmation()
         if choice == "skip":
             status = "skipped"
-            log_entry(contact, payload, status)
+            log_entry(contact, payload, status, "Skipped by user")
             continue
         mode = "draft" if choice == "draft" else "send"
         result = send_email(payload, mode, dry_run)
-        status = result.get('status', 'error')
-        log_entry(contact, payload, status, result.get('detail'))
+        status = result.get("status", "error")
+        log_entry(contact, payload, status, result.get("detail"))
+
 
 if __name__ == "__main__":
     main()

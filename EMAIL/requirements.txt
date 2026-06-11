@@ -1,6 +1,4 @@
-python-dotenv
-rich
-jinja2
-pydantic
-groq
 streamlit
+jinja2
+rich
+python-dotenv

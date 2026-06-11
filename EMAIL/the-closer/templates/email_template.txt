@@ -1,0 +1,11 @@
+Hi {{ recipient_name }},
+
+I noticed {{ company }} is hiring for {{ role }}. {{ personalization_note }}
+
+I'm {{ candidate_name }}, and I've been working on {{ candidate_background }}.
+
+Would you be open to a quick chat or looking at my profile?
+
+Best,
+{{ candidate_name }}
+{{ portfolio_url }}
